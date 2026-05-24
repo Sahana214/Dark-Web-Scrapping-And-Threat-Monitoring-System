@@ -4,7 +4,7 @@ import hashlib
 import joblib
 import pandas as pd
 
-# DATABASE
+
 conn = sqlite3.connect('users.db', check_same_thread=False)
 c = conn.cursor()
 c.execute('''
@@ -15,12 +15,11 @@ CREATE TABLE IF NOT EXISTS users (
 ''')
 conn.commit()
 
-# PASSWORD HASH
+
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 
-# USER FUNCTIONS
 def add_user(username, password):
     c.execute("INSERT INTO users VALUES (?, ?)", 
               (username, hash_password(password)))
@@ -30,8 +29,6 @@ def login_user(username, password):
               (username, hash_password(password)))
     return c.fetchone()
 
-
-# LOAD MODEL
 @st.cache_resource
 def load_model():
     model = joblib.load("rf_model.pkl")
@@ -40,14 +37,11 @@ def load_model():
 model, vectorizer = load_model()
 
 
-# SESSION STATE
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "history" not in st.session_state:
     st.session_state.history = []
 
-
-# LOGIN / SIGNUP PAGE
 def login_page():
     st.title("🔐 Login System")
     option = st.radio("Select Option", ["Login", "Signup"])
@@ -69,21 +63,16 @@ def login_page():
             add_user(username, password)
             st.success("Account Created Successfully")
 
-
-# NAVIGATION
 def navigation():
     return st.sidebar.radio("Menu", ["Prediction","Dashboard", "History", "Logout"])
 
 
-# DASHBOARD
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
 def dashboard():
     st.title("📊 Threat Monitoring Dashboard")
-
-    # -------- Load Data --------
     if st.session_state.history:
         df = pd.DataFrame(
             st.session_state.history,
@@ -92,8 +81,6 @@ def dashboard():
     else:
         st.warning("No data available")
         return
-
-    # -------- FILTER --------
     st.subheader("🎛 Filters")
 
     threat_filter = st.selectbox(
@@ -104,7 +91,6 @@ def dashboard():
     if threat_filter != "All":
         df = df[df["Prediction"] == threat_filter]
 
-    # -------- METRIC CARDS --------
     st.markdown("### 📌 Overview")
 
     col1, col2, col3 = st.columns(3)
@@ -132,14 +118,10 @@ def dashboard():
 
     st.markdown("---")
 
-    # -------- CHART DATA --------
     count_data = df["Prediction"].value_counts().reset_index()
     count_data.columns = ["Threat", "Count"]
 
-    # -------- CHARTS --------
     col1, col2 = st.columns(2)
-
-    # Pie Chart
     with col1:
         fig1 = px.pie(
             count_data,
@@ -149,7 +131,6 @@ def dashboard():
         )
         st.plotly_chart(fig1, use_container_width=True)
 
-    # Bar Chart
     with col2:
         fig2 = px.bar(
             count_data,
@@ -162,7 +143,7 @@ def dashboard():
 
     st.markdown("---")
 
-    # -------- CONFIDENCE GRAPH --------
+
     fig3 = px.histogram(
         df,
         x="Confidence",
@@ -171,12 +152,11 @@ def dashboard():
     )
     st.plotly_chart(fig3, use_container_width=True)
 
-    # -------- TABLE --------
+
     st.subheader("📋 Data Table")
     st.dataframe(df, use_container_width=True)
 
 
-# PREDICTION
 def prediction():
     st.title("🔍 Threat Prediction")
     text = st.text_input("Enter Item")
@@ -185,16 +165,16 @@ def prediction():
             st.warning("Please enter text")
         else:
             vec = vectorizer.transform([text])
-            # Prediction
+        
             result = model.predict(vec)[0]
-            # Confidence
+         
             confidence = model.predict_proba(vec).max() * 100
             st.success(f"Prediction: {result}")
             st.info(f"Confidence: {confidence:.2f}%")
-            # Save history
+         
             st.session_state.history.append([text, result, round(confidence,2)])
 
-# HISTORY
+
 def history():
     st.title("📜 Prediction History")
 
@@ -207,19 +187,16 @@ def history():
     else:
         st.warning("No history found")
 
-
-# LOGOUT
 def logout():
     st.session_state.logged_in = False
     st.session_state.history = []
     st.success("Logged out successfully")
-    st.rerun()   # ✅ fixed
+    st.rerun() 
 
 
-# MAIN APP
 if not st.session_state.logged_in:
     login_page()
-    st.stop()   # 🔥 stop here (important)
+    st.stop()   
 else:
     st.sidebar.write(f"👤 {st.session_state.username}")
     choice = navigation()
