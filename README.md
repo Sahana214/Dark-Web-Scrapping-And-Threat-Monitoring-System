@@ -65,6 +65,11 @@ AI-Threat-Detection/
 ![Login Page](LOGIN_PAGE.png)
 
 ---
+---
+### Prediction page
+![PREDICTOIN_PAGE](PREDICTION_PAGE.png)
+
+---
 
 ### 📊 Dashboard
 
@@ -73,11 +78,7 @@ AI-Threat-Detection/
 ![Dashboard](DASHBOARD3.png)
 
 ---
----
-### Prediction page
-![PREDICTOIN_PAGE](PREDICTION_PAGE.png)
 
----
 ---
 ### History Page
 ![History](HISTORY_PAGE.png)
